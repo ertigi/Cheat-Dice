@@ -29,7 +29,7 @@ public class ServiceContainer : IServiceContainer
     {
         if (!_servicesMap.ContainsKey(typeof(TService)))
             throw new NoRegisteredServiceException($"No registered service with type {typeof(TService)}");
-        
+
         return _servicesMap[typeof(TService)] as TService;
     }
 

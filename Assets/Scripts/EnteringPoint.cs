@@ -13,11 +13,11 @@ public class EnteringPoint : MonoBehaviour, ICoroutineRunner
 
     private void Update()
     {
-        
+
     }
 
     private void FixedUpdate()
     {
-        
+
     }
 }
