@@ -19,4 +19,9 @@ public class Dice : MonoBehaviour
         _rigidbody.velocity = force;
         _rigidbody.AddTorque(torgue);
     }
+
+    public void SetPositionAndRotation(Vector3 position, Quaternion rotation)
+    {
+        transform.SetPositionAndRotation(position, rotation);
+    }
 }

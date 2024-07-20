@@ -4,6 +4,7 @@ public class EnteringPoint : MonoBehaviour, ICoroutineRunner
 {
     [SerializeField] private Dice _dicePrefab;
     [SerializeField] private ThrowSettings _throwSettings;
+    [SerializeField] private RecorderSettings _recorderSettings;
 
     private ServiceContainer _serviceContainer;
 
@@ -11,7 +12,7 @@ public class EnteringPoint : MonoBehaviour, ICoroutineRunner
     {
         _serviceContainer = new ServiceContainer();
 
-        _serviceContainer.RegisterService(new DiceContriller(_dicePrefab, _throwSettings));
+        _serviceContainer.RegisterService(new DiceContriller(_dicePrefab, _throwSettings, _recorderSettings, this));
     }
 
     private void Update()

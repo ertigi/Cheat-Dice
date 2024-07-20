@@ -3,31 +3,43 @@ using UnityEngine;
 
 public class DiceContriller : IService, IUpdateService
 {
-    private DiceFactory _diceFactory;
     private List<Dice> _dices;
+    private DiceFactory _diceFactory;
     private ThrowSettings _throwSettings;
+    private ThrowRecorder _throwRecorder;
+    private int _testFace = 1;
 
-    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings)
+    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings, RecorderSettings recorderSettings, ICoroutineRunner coroutineRunner)
     {
+        _throwSettings = throwSettings;
+
         _diceFactory = new DiceFactory(dicePrefab);
         _dices = new List<Dice>();
-        _throwSettings = throwSettings;
+        _throwRecorder = new ThrowRecorder(recorderSettings, coroutineRunner);
     }
 
     public void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
+            Debug.Log($"Throw. Face = {_testFace}");
+
             ThrowInfo throwInfo = new ThrowInfo();
 
             int rand = Random.Range(2, _throwSettings.StartPositions.Count + 1);
 
+
             for (int i = 0; i < rand; i++)
             {
-                throwInfo.TargetFaces.Add(1);
+                throwInfo.TargetFaces.Add(_testFace);
             }
 
             ThrowDices(throwInfo);
+
+            _testFace++;
+
+            if (_testFace > 6)
+                _testFace = 1;
         }
     }
 
@@ -41,6 +53,12 @@ public class DiceContriller : IService, IUpdateService
 
         CreateDices(throwInfo.TargetFaces.Count);
         InitThrow();
+
+        _throwRecorder.StartRecord(_dices);
+
+
+
+        _throwRecorder.Play();
 
         // _recorder.Record(_dices);
         // dice view rotate
