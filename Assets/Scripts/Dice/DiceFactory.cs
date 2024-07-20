@@ -19,6 +19,7 @@ public class DiceFactory
         if (_instancedDice.Count > 0)
         {
             dice = _instancedDice[0];
+            dice.gameObject.SetActive(true);
             _instancedDice.RemoveAt(0);
         }
         else
@@ -34,5 +35,7 @@ public class DiceFactory
     public void Destroy(Dice dice)
     {
         dice.EnablePhysics(false);
+        dice.gameObject.SetActive(false);
+        _instancedDice.Add(dice);
     }
 }
