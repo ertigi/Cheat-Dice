@@ -35,6 +35,7 @@ public class DiceFactory
     public void Destroy(Dice dice)
     {
         dice.EnablePhysics(false);
+        dice.ResetDiceView();
         dice.gameObject.SetActive(false);
         _instancedDice.Add(dice);
     }

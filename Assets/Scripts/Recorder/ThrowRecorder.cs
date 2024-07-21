@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class ThrowRecorder
+public class ThrowRecorder : IService
 {
     private List<Dice> _dices;
     private List<RecordData> _recordDatas;
-    private RecorderSettings _recorderSettings;
     private ICoroutineRunner _coroutineRunner;
     private Coroutine _animation;
 
-    public ThrowRecorder(RecorderSettings recorderSettings, ICoroutineRunner coroutineRunner)
+    public ThrowRecorder(ICoroutineRunner coroutineRunner)
     {
-        _recorderSettings = recorderSettings;
         _coroutineRunner = coroutineRunner;
 
         _dices = new List<Dice>();
@@ -45,11 +41,8 @@ public class ThrowRecorder
 
     private IEnumerator PlayAnimation()
     {
-        float deltaTime = Time.fixedDeltaTime / _recorderSettings.AnimationSpeed;
         int frameCounter = 0;
         bool isHaveFrame = true;
-
-        WaitForSeconds frameTime = new WaitForSeconds(deltaTime);
 
         while (isHaveFrame)
         {
@@ -64,7 +57,7 @@ public class ThrowRecorder
             }
 
             frameCounter++;
-            yield return new WaitForSeconds(deltaTime);
+            yield return new WaitForFixedUpdate();
         }
     }
 

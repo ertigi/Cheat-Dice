@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class DiceContriller : IService, IUpdateService
@@ -9,20 +10,20 @@ public class DiceContriller : IService, IUpdateService
     private ThrowRecorder _throwRecorder;
     private int _testFace = 1;
 
-    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings, RecorderSettings recorderSettings, ICoroutineRunner coroutineRunner)
+    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings, ThrowRecorder throwRecorder)
     {
         _throwSettings = throwSettings;
+        _throwRecorder = throwRecorder;
 
         _diceFactory = new DiceFactory(dicePrefab);
         _dices = new List<Dice>();
-        _throwRecorder = new ThrowRecorder(recorderSettings, coroutineRunner);
     }
 
     public void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
-            Debug.Log($"Throw. Face = {_testFace}");
+            Debug.Log($"Throw. Face = {_testFace + 1}");
 
             ThrowInfo throwInfo = new ThrowInfo();
 
@@ -38,8 +39,8 @@ public class DiceContriller : IService, IUpdateService
 
             _testFace++;
 
-            if (_testFace > 6)
-                _testFace = 1;
+            if (_testFace > 5)
+                _testFace = 0;
         }
     }
 
@@ -48,21 +49,18 @@ public class DiceContriller : IService, IUpdateService
         if (_dices.Count > 0)
             RemoveOldDices();
 
-        //  if (_recorder.isPlayAnimation)
-        //      _recorder.BreakAnimation();     
-
         CreateDices(throwInfo.TargetFaces.Count);
         InitThrow();
 
         _throwRecorder.StartRecord(_dices);
 
-
+        for (int i = 0; i < _dices.Count; i++)
+        {
+            _dices[i].FindUpperFace();
+            _dices[i].RotateToFace(throwInfo.TargetFaces[i]);
+        }
 
         _throwRecorder.Play();
-
-        // _recorder.Record(_dices);
-        // dice view rotate
-        // _recorder.Play()
     }
 
     private void CreateDices(int amount)
