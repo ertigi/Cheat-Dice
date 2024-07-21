@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ThrowRecorder : IService
+public class ThrowRecorder : IThrowRecorder
 {
     private List<Dice> _dices;
     private List<RecordData> _recordDatas;
@@ -19,17 +19,13 @@ public class ThrowRecorder : IService
 
     public void StartRecord(List<Dice> dices)
     {
-        if (_dices.Count > 0)
-            _dices.Clear();
-
-        if (_recordDatas.Count > 0)
-            _recordDatas.Clear();
+        _dices.Clear();
+        _recordDatas.Clear();
 
         if (_animation != null)
             _coroutineRunner.StopCoroutine(_animation);
 
         _dices.AddRange(dices);
-
         InitRecording();
         Recording();
     }
@@ -37,6 +33,52 @@ public class ThrowRecorder : IService
     public void Play()
     {
         _animation = _coroutineRunner.StartCoroutine(PlayAnimation());
+    }
+
+    // Инициализация записи, сохранение начальных позиций и вращений кубиков
+    private void InitRecording()
+    {
+        foreach (Dice dice in _dices)
+        {
+            _recordDatas.Add(new RecordData(dice.transform.position, dice.transform.rotation));
+        }
+    }
+
+    // Запись позиций и вращений кубиков во время их движения
+    private void Recording()
+    {
+        Physics.simulationMode = SimulationMode.Script;
+
+        EnablePhysics(true);
+
+        while (!IsAllDiceSleeping())
+        {
+            for (int i = 0; i < _dices.Count; i++)
+            {
+                Frame newFrame = new Frame(_dices[i].transform.position, _dices[i].transform.rotation);
+
+                _recordDatas[i].frames.Add(newFrame);
+            }
+
+            Physics.Simulate(Time.fixedDeltaTime);
+        }
+
+        EnablePhysics(false);
+
+        Physics.simulationMode = SimulationMode.FixedUpdate;
+    }
+
+    // Проверка, все ли кубики перестали двигаться
+    private bool IsAllDiceSleeping()
+    {
+        foreach (Dice dice in _dices)
+        {
+            if (!dice.IsSleeping)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private IEnumerator PlayAnimation()
@@ -61,49 +103,6 @@ public class ThrowRecorder : IService
         }
     }
 
-    private void InitRecording()
-    {
-        foreach (Dice dice in _dices)
-        {
-            _recordDatas.Add(new RecordData(dice.transform.position, dice.transform.rotation));
-        }
-    }
-
-    private void Recording()
-    {
-        Physics.simulationMode = SimulationMode.Script;
-
-        EnablePhysics(true);
-
-        while (!IsAllDiceSliping())
-        {
-            for (int i = 0; i < _dices.Count; i++)
-            {
-                Frame newFrame = new Frame(_dices[i].transform.position, _dices[i].transform.rotation);
-
-                _recordDatas[i].frames.Add(newFrame);
-            }
-
-            Physics.Simulate(Time.fixedDeltaTime);
-        }
-
-        EnablePhysics(false);
-
-        Physics.simulationMode = SimulationMode.FixedUpdate;
-    }
-
-    private bool IsAllDiceSliping()
-    {
-        bool returnValue = true;
-
-        foreach (Dice dice in _dices)
-        {
-            returnValue &= dice.IsSleeping;
-        }
-
-        return returnValue;
-    }
-
     private void EnablePhysics(bool value)
     {
         foreach (Dice dice in _dices)
@@ -112,6 +111,7 @@ public class ThrowRecorder : IService
         }
     }
 
+    // Структура для хранения начальной позиции, вращения и кадров каждого кубика
     private struct RecordData
     {
         public Vector3 StartPosition;
@@ -126,6 +126,7 @@ public class ThrowRecorder : IService
         }
     }
 
+    // Структура для хранения позиции и вращения каждого записанного кадра
     private struct Frame
     {
         public Vector3 position;

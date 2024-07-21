@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Dice : MonoBehaviour
@@ -34,6 +32,7 @@ public class Dice : MonoBehaviour
         _view.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 
+    // определение верхней грани
     public void FindUpperFace()
     {
         _upperFace = 0;
@@ -44,6 +43,8 @@ public class Dice : MonoBehaviour
         }
     }
 
+    // вращение визуала исходя из позиций текущей и необходимой грани
+    // подходит только для кубов 6d
     public void RotateToFace(int targetFaceIndex)
     {
         if (targetFaceIndex == _upperFace)
@@ -52,9 +53,13 @@ public class Dice : MonoBehaviour
         Vector3 currentTopFacePosition = _diceFaces[_upperFace].localPosition;
         Vector3 targetFacePosition = _diceFaces[targetFaceIndex].localPosition;
 
+        // вычисление оси вращения
         Vector3 rotationAxis = Vector3.Cross(currentTopFacePosition, targetFacePosition);
-        float rotationAngle = Vector3.SignedAngle(currentTopFacePosition, targetFacePosition, rotationAxis);
+        // вычисление угла поворота
+        float rotationAngle = Vector3.SignedAngle(targetFacePosition, currentTopFacePosition, rotationAxis);
 
+        // при угле в 180, грани находятся на противоположных сторонах куба
+        // в таком случае(ввиду геометрии куба) нужно взять за ось вращения любую не параллельную ось
         if (rotationAngle == 180)
         {
             if (currentTopFacePosition.x != 0)
@@ -65,7 +70,7 @@ public class Dice : MonoBehaviour
                 rotationAxis.x = 1;
         }
 
-        rotationAxis = -rotationAxis.normalized * rotationAngle;
+        rotationAxis = rotationAxis.normalized * rotationAngle;
 
         _view.rotation *= Quaternion.Euler(rotationAxis);
     }

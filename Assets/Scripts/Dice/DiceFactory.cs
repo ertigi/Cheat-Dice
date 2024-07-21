@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+// обычный паттерн "фабрика" объеденный с пулом
 public class DiceFactory
 {
     private List<Dice> _instancedDice;

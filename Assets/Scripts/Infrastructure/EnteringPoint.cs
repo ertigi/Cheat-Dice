@@ -13,8 +13,7 @@ public class EnteringPoint : MonoBehaviour, ICoroutineRunner
 
         _serviceContainer = new ServiceContainer();
 
-        _serviceContainer.RegisterService(new ThrowRecorder(this));
-        _serviceContainer.RegisterService(new DiceContriller(_dicePrefab, _throwSettings, _serviceContainer.Get<ThrowRecorder>()));
+        InitializeServices();
     }
 
     private void Update()
@@ -25,5 +24,11 @@ public class EnteringPoint : MonoBehaviour, ICoroutineRunner
     private void FixedUpdate()
     {
         _serviceContainer.FixedUpdate();
+    }
+
+    private void InitializeServices()
+    {
+        _serviceContainer.RegisterService<IThrowRecorder>(new ThrowRecorder(this));
+        _serviceContainer.RegisterService<IDiceContriller>(new DiceContriller(_dicePrefab, _throwSettings, _serviceContainer.Get<IThrowRecorder>()));
     }
 }

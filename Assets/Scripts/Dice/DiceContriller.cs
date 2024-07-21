@@ -2,15 +2,15 @@
 using System.Text;
 using UnityEngine;
 
-public class DiceContriller : IService, IUpdateService
+public class DiceContriller : IDiceContriller, IUpdateService
 {
     private List<Dice> _dices;
     private DiceFactory _diceFactory;
     private ThrowSettings _throwSettings;
-    private ThrowRecorder _throwRecorder;
+    private IThrowRecorder _throwRecorder;
     private int _testFace = 1;
 
-    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings, ThrowRecorder throwRecorder)
+    public DiceContriller(Dice dicePrefab, ThrowSettings throwSettings, IThrowRecorder throwRecorder)
     {
         _throwSettings = throwSettings;
         _throwRecorder = throwRecorder;
@@ -25,7 +25,7 @@ public class DiceContriller : IService, IUpdateService
         {
             Debug.Log($"Throw. Face = {_testFace + 1}");
 
-            ThrowInfo throwInfo = new ThrowInfo();
+            IThrowInfo throwInfo = new ThrowInfo();
 
             int rand = Random.Range(2, _throwSettings.StartPositions.Count + 1);
 
@@ -44,22 +44,28 @@ public class DiceContriller : IService, IUpdateService
         }
     }
 
-    public void ThrowDices(ThrowInfo throwInfo)
+    public void ThrowDices(IThrowInfo throwInfo)
     {
+        // Удаление старых кубиков (возвращение в пул)
         if (_dices.Count > 0)
             RemoveOldDices();
 
+        // создание и инизиализация новых кубиков
         CreateDices(throwInfo.TargetFaces.Count);
         InitThrow();
 
+        // старт симуляции броска и её записи 
+        // в конеце записи кубы остаются лежать на поле, это необходимо далее
         _throwRecorder.StartRecord(_dices);
 
+        // поворот визуала куба(является дочерним) исходя из конечного значения в симуляции
         for (int i = 0; i < _dices.Count; i++)
         {
             _dices[i].FindUpperFace();
             _dices[i].RotateToFace(throwInfo.TargetFaces[i]);
         }
 
+        // воспроизведение записаной симуляции
         _throwRecorder.Play();
     }
 
@@ -81,6 +87,8 @@ public class DiceContriller : IService, IUpdateService
         _dices.Clear();
     }
 
+    // Инициализация броска
+    // Рандомизация нужна для более "живого" броска 
     private void InitThrow()
     {
         Vector3 position, force, torgue;
@@ -103,15 +111,5 @@ public class DiceContriller : IService, IUpdateService
 
             _dices[i].Throw(position, rotation, force, torgue);
         }
-    }
-}
-
-public class ThrowInfo
-{
-    public List<int> TargetFaces;
-
-    public ThrowInfo()
-    {
-        TargetFaces = new List<int>();
     }
 }
